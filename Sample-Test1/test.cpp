@@ -24,10 +24,37 @@ public:
 		}
 		catch (WriteFailException e)
 		{
-
 		}
 	}
+	void checkReadFailException() {
+		try
+		{
+			DeviceDriver dd(&flashMemoryDeviceMock);
+			dd.read(0x2000);
+			FAIL();
+		}
+		catch (ReadFailException e)
+		{}
+	}
 };
+
+TEST_F(DeviceDriverFixture, ReadSuccessTest) {
+	EXPECT_CALL(flashMemoryDeviceMock, read(0x2000))
+		.Times(5)
+		.WillRepeatedly(Return(1000));
+	DeviceDriver dd(&flashMemoryDeviceMock);
+	cout << dd.read(0x2000) << "\n";
+}
+
+TEST_F(DeviceDriverFixture, ReadFailTest) {
+
+	EXPECT_CALL(flashMemoryDeviceMock, read(0x2000))
+		.Times(3)
+		.WillOnce(Return(1000))
+		.WillOnce(Return(1000))
+		.WillOnce(Return(1));
+	checkReadFailException();
+}
 
 TEST_F(DeviceDriverFixture, WriteSuccessTest) {
 	EXPECT_CALL(flashMemoryDeviceMock, read(0x2000))
