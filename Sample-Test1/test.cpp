@@ -15,7 +15,18 @@ class DeviceDriverFixture : public testing::Test
 {
 public:
 	FlashMemoryDeviceMock flashMemoryDeviceMock;
-	void checkFailException() {
+	void checkWriteFailException() {
+		try
+		{
+			DeviceDriver dd(&flashMemoryDeviceMock);
+			dd.write(0x2000, 100);
+			FAIL();
+		}
+		catch (WriteFailException e)
+		{
+		}
+	}
+	void checkReadFailException() {
 		try
 		{
 			DeviceDriver dd(&flashMemoryDeviceMock);
@@ -23,11 +34,10 @@ public:
 			FAIL();
 		}
 		catch (ReadFailException e)
-		{
-
-		}
+		{}
 	}
 };
+
 TEST_F(DeviceDriverFixture, ReadSuccessTest) {
 	EXPECT_CALL(flashMemoryDeviceMock, read(0x2000))
 		.Times(5)
@@ -43,5 +53,20 @@ TEST_F(DeviceDriverFixture, ReadFailTest) {
 		.WillOnce(Return(1000))
 		.WillOnce(Return(1000))
 		.WillOnce(Return(1));
-	checkFailException();
+	checkReadFailException();
+}
+
+TEST_F(DeviceDriverFixture, WriteSuccessTest) {
+	EXPECT_CALL(flashMemoryDeviceMock, read(0x2000))
+		.WillRepeatedly(Return(0xFF));
+	EXPECT_CALL(flashMemoryDeviceMock, write(0x2000, 100));
+	DeviceDriver dd(&flashMemoryDeviceMock);
+	dd.write(0x2000, 100);
+}
+
+TEST_F(DeviceDriverFixture, WriteFailTest) {
+
+	EXPECT_CALL(flashMemoryDeviceMock, read(0x2000))
+		.WillRepeatedly(Return(0xAA));
+	checkWriteFailException();
 }
