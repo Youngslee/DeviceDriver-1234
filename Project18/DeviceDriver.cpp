@@ -1,5 +1,6 @@
 #include "DeviceDriver.h"
 #include <exception>
+#include <iostream>
 
 class WriteFailException : public std::exception {
 public:
