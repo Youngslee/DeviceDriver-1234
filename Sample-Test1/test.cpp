@@ -16,7 +16,17 @@ class DeviceDriverFixture : public testing::Test
 {
 public:
 	FlashMemoryDeviceMock flashMemoryDeviceMock;
-
+	void checkWriteFailException() {
+		try
+		{
+			DeviceDriver dd(&flashMemoryDeviceMock);
+			dd.write(0x2000, 100);
+			FAIL();
+		}
+		catch (WriteFailException e)
+		{
+		}
+	}
 	void checkReadFailException() {
 		try
 		{
@@ -26,7 +36,6 @@ public:
 		}
 		catch (ReadFailException e)
 		{
-
 		}
 	}
 };
@@ -49,6 +58,18 @@ public:
 
 		}
 	}
+	void checkWriteFailException() {
+		try
+		{
+			DeviceDriver dd(&flashMemoryDeviceMock);
+			Application app(&dd);
+			app.WriteAll(4);
+			FAIL();
+		}
+		catch (WriteFailException e)
+		{
+		}
+	}
 };
 TEST_F(DeviceDriverFixture, ReadSuccessTest) {
 	EXPECT_CALL(flashMemoryDeviceMock, read(0x2000))
@@ -68,6 +89,20 @@ TEST_F(DeviceDriverFixture, ReadFailTest) {
 	checkReadFailException();
 }
 
+TEST_F(DeviceDriverFixture, WriteSuccessTest) {
+	EXPECT_CALL(flashMemoryDeviceMock, read(0x2000))
+		.WillRepeatedly(Return(0xFF));
+	EXPECT_CALL(flashMemoryDeviceMock, write(0x2000, 100));
+	DeviceDriver dd(&flashMemoryDeviceMock);
+	dd.write(0x2000, 100);
+}
+
+TEST_F(DeviceDriverFixture, WriteFailTest) {
+
+	EXPECT_CALL(flashMemoryDeviceMock, read(0x2000))
+		.WillRepeatedly(Return(0xAA));
+	checkWriteFailException();
+}
 TEST_F(ApplicationFixture, ReadAndPrintPassTest) {
 	startAddr = 10;
 	endAddr = 12;
@@ -99,6 +134,7 @@ TEST_F(ApplicationFixture, WriteAllPassTest) {
 	for (int i = startAddr; i <= endAddr; i++)
 	{
 		EXPECT_CALL(flashMemoryDeviceMock, read(i))
+			.Times(5)
 			.WillRepeatedly(Return(0xFF));
 		EXPECT_CALL(flashMemoryDeviceMock, write(i, 4));
 	}
@@ -106,4 +142,15 @@ TEST_F(ApplicationFixture, WriteAllPassTest) {
 	Application app(&dd);
 	app.WriteAll(4);
 }
-
+TEST_F(ApplicationFixture, WriteAllFailTest) {
+	startAddr = 0;
+	endAddr = 4;
+	EXPECT_CALL(flashMemoryDeviceMock, read(0))
+		.Times(5)
+		.WillRepeatedly(Return(0xFF));
+	EXPECT_CALL(flashMemoryDeviceMock, write(0, 4));
+	EXPECT_CALL(flashMemoryDeviceMock, read(1))
+		.Times(5)
+		.WillRepeatedly(Return(0x4));
+	checkWriteFailException();
+}
