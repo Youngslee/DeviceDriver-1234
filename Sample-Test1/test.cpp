@@ -15,7 +15,18 @@ class DeviceDriverFixture : public testing::Test
 {
 public:
 	FlashMemoryDeviceMock flashMemoryDeviceMock;
-	
+	void checkFailException() {
+		try
+		{
+			DeviceDriver dd(&flashMemoryDeviceMock);
+			dd.read(0x2000);
+			FAIL();
+		}
+		catch (exception e)
+		{
+
+		}
+	}
 };
 TEST_F(DeviceDriverFixture, ReadSuccessTest) {
 	EXPECT_CALL(flashMemoryDeviceMock, read(0x2000))
@@ -26,11 +37,11 @@ TEST_F(DeviceDriverFixture, ReadSuccessTest) {
 }
 
 TEST_F(DeviceDriverFixture, ReadFailTest) {
+
 	EXPECT_CALL(flashMemoryDeviceMock, read(0x2000))
-		.Times(2)
-	.WillOnce(Return(1000))
-	.WillOnce(Return(1))
-	.WillRepeatedly(Return(1000));
-	DeviceDriver dd(&flashMemoryDeviceMock);
-	EXPECT_THROW(dd.read(0x2000), exception);
+		.Times(3)
+		.WillOnce(Return(1000))
+		.WillOnce(Return(1000))
+		.WillOnce(Return(1));
+	checkFailException();
 }
