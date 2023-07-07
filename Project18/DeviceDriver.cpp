@@ -5,14 +5,20 @@
 DeviceDriver::DeviceDriver(FlashMemoryDevice* hardware) : m_hardware(hardware)
 {}
 
+int DeviceDriver::readData(long address)
+{
+	return (int)(m_hardware->read(address));
+}
+
 int DeviceDriver::read(long address)
 {
     // TODO: implement this method properly
-    int iteration = 4;
-    int ret = (int)(m_hardware->read(address));
+    int iteration = ITERATION_READ;
+    int ret = readData(address);
+    iteration--;
 	while(iteration--)
 	{
-        if (ret != (int)(m_hardware->read(address))) throw std::exception("ReadFailException");
+        if (ret != readData(address)) throw std::exception("ReadFailException");
 	}
     return ret;
 }
