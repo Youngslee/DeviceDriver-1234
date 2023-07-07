@@ -1,7 +1,13 @@
 #include "DeviceDriver.h"
-
 #include <exception>
 
+class ReadFailException : public std::exception {
+public:
+    const char* what() const throw()
+    {
+        return "ReadFailException";
+    }
+};
 DeviceDriver::DeviceDriver(FlashMemoryDevice* hardware) : m_hardware(hardware)
 {}
 
@@ -18,7 +24,7 @@ int DeviceDriver::read(long address)
     iteration--;
 	while(iteration--)
 	{
-        if (ret != readData(address)) throw std::exception("ReadFailException");
+        if (ret != readData(address)) throw *(new ReadFailException);
 	}
     return ret;
 }

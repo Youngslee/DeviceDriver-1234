@@ -22,7 +22,7 @@ public:
 			dd.read(0x2000);
 			FAIL();
 		}
-		catch (exception e)
+		catch (ReadFailException e)
 		{
 
 		}
